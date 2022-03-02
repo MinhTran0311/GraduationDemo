@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late LanguageStore _languageStore;
   late ImagePicker _picker;
   XFile? _image;
+  String? selectedImage = "";
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: _buildAppBar(),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );
@@ -57,7 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // app bar methods:-----------------------------------------------------------
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      title: Text(AppLocalizations.of(context).translate('home_tv_posts')),
+      backgroundColor: Colors.amber,
+      title: Center(
+          child: Text("Aerial Image Detection", textAlign: TextAlign.center)),
     );
   }
 
@@ -91,24 +95,69 @@ class _HomeScreenState extends State<HomeScreen> {
             : Material(child: _buildContent());
       },
     );
-
   }
 
-  String? selectedImage = "";
-
   Widget _buildContent() {
-    return Center(
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      child: Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text((selectedImage == "" ? "Nothing to show" : selectedImage!)),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(children: [
+                SizedBox(height: 16),
+                _image != null
+                    ? Column(children: [
+                        Text("Input Image"),
+                        Container(
+                          child: Image.file(File(_image!.path),
+                              fit: BoxFit.contain),
+                        ),
+                      ])
+                    : SizedBox.shrink(),
+                SizedBox(height: 16),
+                Observer(builder: (context) {
+                  if (_postStore.output != null) {
+                    return Column(children: [
+                      Text("Output Image"),
+                      Image.memory(base64Decode(_postStore.output!)),
+                    ]);
+                  } else
+                    return Container(width: 0, height: 0);
+                }),
+                  SizedBox(height: 8),
+                Text((selectedImage == ""
+                    ? "Please select or capture an image"
+                    : selectedImage!)),
+              ]),
+            ),
+          ),
+          SizedBox(height: 8),
+          _buildButton(),
+          SizedBox(height: 8),
+        ]),
+      ),
+    );
+  }
+
+  _buildButton() {
+    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       TextButton.icon(
-        onPressed: () => _showImageSourceActionSheet(context),
-        icon: Icon(Icons.upload_file, color: Colors.white),
+        onPressed: () =>
+            _showImageSourceActionSheet(Scaffold.of(context).context),
+        icon: Icon(Icons.image_outlined, color: Colors.white),
         label: Text(
-          "upload",
+          "Upload",
+          style: TextStyle(fontSize: 18, color: Colors.white),
         ),
         style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Colors.amber)),
+          backgroundColor: MaterialStateProperty.all(Colors.amber),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          ),
+        ),
       ),
+      SizedBox(width: 36),
       TextButton.icon(
         onPressed: () {
           if (_image != null)
@@ -116,26 +165,17 @@ class _HomeScreenState extends State<HomeScreen> {
           else
             _showErrorMessage("Please select an aerial image");
         },
-        icon: Icon(Icons.upload_file, color: Colors.white),
-        label: Text("submit"),
+        icon: Icon(Icons.upload_file_outlined, color: Colors.white),
+        label:
+            Text("Submit", style: TextStyle(fontSize: 18, color: Colors.white)),
         style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Colors.amber)),
+          backgroundColor: MaterialStateProperty.all(Colors.amber),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+          ),
+        ),
       ),
-      Observer(builder: (context) {
-        if (_postStore.output != null) {
-          print("213212112312132");
-          return Image.memory(base64Decode(_postStore.output!));
-        } else
-          return Container(width: 0, height: 0);
-      }),
-      _image != null
-          ? Expanded(
-              child: Container(
-                child: Image.file(File(_image!.path), fit: BoxFit.contain),
-              ),
-            )
-          : SizedBox.shrink()
-    ]));
+    ]);
   }
 
   _showDialog<T>({required BuildContext context, required Widget child}) {

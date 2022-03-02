@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:boilerplate/data/local/datasources/post/post_datasource.dart';
 import 'package:boilerplate/data/sharedpref/shared_preference_helper.dart';
+import 'package:boilerplate/models/image/image_list.dart';
 import 'package:boilerplate/models/post/post.dart';
 import 'package:boilerplate/models/post/post_list.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,22 +25,16 @@ class Repository {
   Repository(this._postApi, this._sharedPrefsHelper, this._postDataSource);
 
   // Post: ---------------------------------------------------------------------
-  Future<PostList> getPosts() async {
-    // check to see if posts are present in database, then fetch from database
-    // else make a network call to get all posts, store them into database for
-    // later use
-    return await _postApi.getPosts().then((postsList) {
-      postsList.posts?.forEach((post) {
-        _postDataSource.insert(post);
-      });
-
-      return postsList;
-    }).catchError((error) => throw error);
-  }
 
   Future<dynamic> upload(XFile file) async {
     return await _postApi.upload(file).then((img) {
       return img;
+    }).catchError((error) => throw error);
+  }
+
+  Future<ImgList?> getHistory() async {
+    return await _postApi.getHistory().then((images) {
+      return images;
     }).catchError((error) => throw error);
   }
 

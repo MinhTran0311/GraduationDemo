@@ -11,7 +11,7 @@ class HomePageScreen extends StatefulWidget {
 
 class _HomePageScreenState extends State<HomePageScreen> {
   String _currentPage = "HomeScreen";
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   late PageController _pageController;
   int _selectedIndex = 0;
 
@@ -57,7 +57,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
           _buildOffstageNavigator("HistoryScreen"),
           _buildOffstageNavigator("HomeScreen"),
           _buildOffstageNavigator("InfoScreen"),
-
         ]),
         bottomNavigationBar: CurvedNavigationBar(
           height: 58,
@@ -70,12 +69,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
           ],
           index: _currentIndex,
           onTap: (index) {
-            setState(
-              () {
-                _selectTab(pageKeys[index], index);
-                _currentIndex = index;
-              },
-            );
+            setState(() {
+              _selectTab(pageKeys[index], index);
+              _currentIndex = index;
+            });
           },
         ),
       ),

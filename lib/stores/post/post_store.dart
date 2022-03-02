@@ -1,4 +1,5 @@
 import 'package:boilerplate/data/repository.dart';
+import 'package:boilerplate/models/image/image_list.dart';
 import 'package:boilerplate/models/post/post_list.dart';
 import 'package:boilerplate/stores/error/error_store.dart';
 import 'package:boilerplate/utils/dio/dio_error_util.dart';
@@ -20,12 +21,12 @@ abstract class _PostStore with Store {
   _PostStore(Repository repository) : this._repository = repository;
 
   // store variables:-----------------------------------------------------------
-  static ObservableFuture<PostList?> emptyPostResponse =
+  static ObservableFuture<ImgList?> emptyPostResponse =
       ObservableFuture.value(null);
 
   @observable
-  ObservableFuture<PostList?> fetchPostsFuture =
-      ObservableFuture<PostList?>(emptyPostResponse);
+  ObservableFuture<ImgList?> fetchPostsFuture =
+      ObservableFuture<ImgList?>(emptyPostResponse);
 
   static ObservableFuture<dynamic> emptyUploadResponse =
       ObservableFuture.value(null);
@@ -48,16 +49,19 @@ abstract class _PostStore with Store {
 
   // actions:-------------------------------------------------------------------
   @action
-  Future getPosts() async {
-    final future = _repository.getPosts();
+  Future getHistory() async {
+    final future = _repository.getHistory();
     fetchPostsFuture = ObservableFuture(future);
 
-    future.then((postList) {
-      this.postList = postList;
+    future.then((imgs) {
+      imgList=imgs;
     }).catchError((error) {
+      print(error);
       errorStore.errorMessage = DioErrorUtil.handleError(error);
     });
   }
+  @observable
+  ImgList? imgList;
 
   @observable
   String? output;
