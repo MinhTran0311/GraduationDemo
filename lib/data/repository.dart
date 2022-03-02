@@ -4,6 +4,7 @@ import 'package:boilerplate/data/local/datasources/post/post_datasource.dart';
 import 'package:boilerplate/data/sharedpref/shared_preference_helper.dart';
 import 'package:boilerplate/models/post/post.dart';
 import 'package:boilerplate/models/post/post_list.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sembast/sembast.dart';
 
 import 'local/constants/db_constants.dart';
@@ -33,6 +34,12 @@ class Repository {
       });
 
       return postsList;
+    }).catchError((error) => throw error);
+  }
+
+  Future<dynamic> upload(XFile file) async {
+    return await _postApi.upload(file).then((img) {
+      return img;
     }).catchError((error) => throw error);
   }
 

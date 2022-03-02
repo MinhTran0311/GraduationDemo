@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
 import 'package:boilerplate/utils/routes/routes.dart';
@@ -6,11 +8,14 @@ import 'package:boilerplate/stores/post/post_store.dart';
 import 'package:boilerplate/stores/theme/theme_store.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
 import 'package:boilerplate/widgets/progress_indicator_widget.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_dialog/material_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -22,10 +27,13 @@ class _HomeScreenState extends State<HomeScreen> {
   late PostStore _postStore;
   late ThemeStore _themeStore;
   late LanguageStore _languageStore;
+  late ImagePicker _picker;
+  XFile? _image;
 
   @override
   void initState() {
     super.initState();
+    _picker = new ImagePicker();
   }
 
   @override
@@ -36,18 +44,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _languageStore = Provider.of<LanguageStore>(context);
     _themeStore = Provider.of<ThemeStore>(context);
     _postStore = Provider.of<PostStore>(context);
-
-    // check to see if already called api
-    if (!_postStore.loading) {
-      _postStore.getPosts();
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-      body: _buildBody(),
+      backgroundColor: Colors.white70,
+      body: SafeArea(child: _buildBody()),
     );
   }
 
@@ -55,16 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       title: Text(AppLocalizations.of(context).translate('home_tv_posts')),
-      actions: _buildActions(context),
     );
-  }
-
-  List<Widget> _buildActions(BuildContext context) {
-    return <Widget>[
-      _buildLanguageButton(),
-      _buildThemeButton(),
-      _buildLogoutButton(),
-    ];
   }
 
   Widget _buildThemeButton() {
@@ -82,102 +76,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLogoutButton() {
-    return IconButton(
-      onPressed: () {
-        SharedPreferences.getInstance().then((preference) {
-          preference.setBool(Preferences.is_logged_in, false);
-          Navigator.of(context).pushReplacementNamed(Routes.login);
-        });
-      },
-      icon: Icon(
-        Icons.power_settings_new,
-      ),
-    );
-  }
-
-  Widget _buildLanguageButton() {
-    return IconButton(
-      onPressed: () {
-        _buildLanguageDialog();
-      },
-      icon: Icon(
-        Icons.language,
-      ),
-    );
-  }
-
   // body methods:--------------------------------------------------------------
   Widget _buildBody() {
     return Stack(
-      children: <Widget>[
-        _handleErrorMessage(),
-        _buildMainContent(),
-      ],
+      children: <Widget>[_buildMainContent()],
     );
   }
 
   Widget _buildMainContent() {
     return Observer(
       builder: (context) {
-        return _postStore.loading
+        return _postStore.uploading
             ? CustomProgressIndicatorWidget()
-            : Material(child: _buildListView());
+            : Material(child: _buildContent());
       },
     );
+
   }
 
-  Widget _buildListView() {
-    return _postStore.postList != null
-        ? ListView.separated(
-            itemCount: _postStore.postList!.posts!.length,
-            separatorBuilder: (context, position) {
-              return Divider();
-            },
-            itemBuilder: (context, position) {
-              return _buildListItem(position);
-            },
-          )
-        : Center(
-            child: Text(
-              AppLocalizations.of(context).translate('home_tv_no_post_found'),
-            ),
-          );
-  }
+  String? selectedImage = "";
 
-  Widget _buildListItem(int position) {
-    return ListTile(
-      dense: true,
-      leading: Icon(Icons.cloud_circle),
-      title: Text(
-        '${_postStore.postList?.posts?[position].title}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
-        style: Theme.of(context).textTheme.title,
+  Widget _buildContent() {
+    return Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Text((selectedImage == "" ? "Nothing to show" : selectedImage!)),
+      TextButton.icon(
+        onPressed: () => _showImageSourceActionSheet(context),
+        icon: Icon(Icons.upload_file, color: Colors.white),
+        label: Text(
+          "upload",
+        ),
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.amber)),
       ),
-      subtitle: Text(
-        '${_postStore.postList?.posts?[position].body}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        softWrap: false,
+      TextButton.icon(
+        onPressed: () {
+          if (_image != null)
+            _postStore.upload(_image!);
+          else
+            _showErrorMessage("Please select an aerial image");
+        },
+        icon: Icon(Icons.upload_file, color: Colors.white),
+        label: Text("submit"),
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.amber)),
       ),
-    );
+      Observer(builder: (context) {
+        if (_postStore.output != null) {
+          print("213212112312132");
+          return Image.memory(base64Decode(_postStore.output!));
+        } else
+          return Container(width: 0, height: 0);
+      }),
+      _image != null
+          ? Expanded(
+              child: Container(
+                child: Image.file(File(_image!.path), fit: BoxFit.contain),
+              ),
+            )
+          : SizedBox.shrink()
+    ]));
   }
 
-  Widget _handleErrorMessage() {
-    return Observer(
-      builder: (context) {
-        if (_postStore.errorStore.errorMessage.isNotEmpty) {
-          return _showErrorMessage(_postStore.errorStore.errorMessage);
-        }
-
-        return SizedBox.shrink();
-      },
-    );
+  _showDialog<T>({required BuildContext context, required Widget child}) {
+    showDialog<T>(
+      context: context,
+      builder: (BuildContext context) => child,
+    ).then<void>((T? value) {
+      // The value passed to Navigator.pop() or null.
+    });
   }
 
-  // General Methods:-----------------------------------------------------------
   _showErrorMessage(String message) {
     Future.delayed(Duration(milliseconds: 0), () {
       if (message.isNotEmpty) {
@@ -192,58 +161,56 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox.shrink();
   }
 
-_buildLanguageDialog() {
-  _showDialog<String>(
-    context: context,
-    child: MaterialDialog(
-      borderRadius: 5.0,
-      enableFullWidth: true,
-      title: Text(
-        AppLocalizations.of(context).translate('home_tv_choose_language'),
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16.0,
-        ),
-      ),
-      headerColor: Theme.of(context).primaryColor,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      closeButtonColor: Colors.white,
-      enableCloseButton: true,
-      enableBackButton: false,
-      onCloseButtonClicked: () {
-        Navigator.of(context).pop();
-      },
-      children: _languageStore.supportedLanguages
-          .map(
-            (object) => ListTile(
-              dense: true,
-              contentPadding: EdgeInsets.all(0.0),
-              title: Text(
-                object.language!,
-                style: TextStyle(
-                  color: _languageStore.locale == object.locale
-                      ? Theme.of(context).primaryColor
-                      : _themeStore.darkMode ? Colors.white : Colors.black,
-                ),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                // change user language based on selected locale
-                _languageStore.changeLanguage(object.locale!);
-              },
-            ),
-          )
-          .toList(),
-    ),
-  );
-}
+  Future<void> selectImageSource(ImageSource imgSrc) async {
+    _image = await _picker.pickImage(source: imgSrc);
+    selectedImage = _image != null ? _image!.name : "";
+    setState(() {});
+  }
 
-  _showDialog<T>({required BuildContext context, required Widget child}) {
-    showDialog<T>(
-      context: context,
-      builder: (BuildContext context) => child,
-    ).then<void>((T? value) {
-      // The value passed to Navigator.pop() or null.
-    });
+  void _showImageSourceActionSheet(BuildContext context) {
+    if (Platform.isIOS) {
+      showCupertinoModalPopup(
+        context: context,
+        builder: (context) => CupertinoActionSheet(actions: [
+          CupertinoActionSheetAction(
+            child: Text("Camera"),
+            onPressed: () {
+              Navigator.pop(context);
+              selectImageSource(ImageSource.camera);
+            },
+          ),
+          CupertinoActionSheetAction(
+            child: Text("Gallery"),
+            onPressed: () {
+              Navigator.pop(context);
+              selectImageSource(ImageSource.gallery);
+            },
+          )
+        ]),
+      );
+    } else {
+      showModalBottomSheet(
+        barrierColor: Colors.black54,
+        context: context,
+        builder: (context) => Wrap(children: [
+          ListTile(
+            leading: Icon(Icons.camera_alt),
+            title: Text("Camera"),
+            onTap: () {
+              Navigator.pop(context);
+              selectImageSource(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.photo_album),
+            title: Text("Gallery"),
+            onTap: () {
+              Navigator.pop(context);
+              selectImageSource(ImageSource.gallery);
+            },
+          )
+        ]),
+      );
+    }
   }
 }
