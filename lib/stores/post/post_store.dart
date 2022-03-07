@@ -1,4 +1,5 @@
 import 'package:boilerplate/data/repository.dart';
+import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/models/image/image_list.dart';
 import 'package:boilerplate/models/post/post_list.dart';
 import 'package:boilerplate/stores/error/error_store.dart';
@@ -54,17 +55,20 @@ abstract class _PostStore with Store {
     fetchPostsFuture = ObservableFuture(future);
 
     future.then((imgs) {
-      imgList=imgs;
+      imgList = imgs;
     }).catchError((error) {
-      print(error);
       errorStore.errorMessage = DioErrorUtil.handleError(error);
     });
   }
+
   @observable
   ImgList? imgList;
 
   @observable
-  String? output;
+  Img? output;
+
+  @observable
+  String? processingTime;
 
   @action
   Future upload(XFile file) async {
@@ -72,9 +76,12 @@ abstract class _PostStore with Store {
     fetchUploadFuture = ObservableFuture(future);
 
     future.then((img) {
-      output = img;
+      processingTime = img["time"].toString();
+      output = new Img(
+          created: DateTime.now().toString(),
+          name: img["name"],
+          image: img["image"]);
     }).catchError((error) {
-      print(error);
       errorStore.errorMessage = DioErrorUtil.handleError(error);
     });
   }

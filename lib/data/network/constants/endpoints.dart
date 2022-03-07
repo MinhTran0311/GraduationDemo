@@ -5,10 +5,10 @@ class Endpoints {
   static const String baseUrl = "http://jsonplaceholder.typicode.com";
 
   // receiveTimeout
-  static const int receiveTimeout = 15000;
+  static const int receiveTimeout = 30000;
 
   // connectTimeout
-  static const int connectionTimeout = 30000;
+  static const int connectionTimeout = 60000;
 
   // booking endpoints
   static const String getPosts = baseUrl + "/posts";

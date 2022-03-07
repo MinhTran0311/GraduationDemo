@@ -1,5 +1,6 @@
 import 'package:boilerplate/ui/history/history.dart';
 import 'package:boilerplate/ui/home/home.dart';
+import 'package:boilerplate/ui/profile/profile.dart';
 import 'package:flutter/material.dart';
 
 
@@ -15,7 +16,7 @@ class TabNavigator extends StatelessWidget {
     if (tabItem == "HomeScreen")
       child = HomeScreen();
     else if (tabItem == "InfoScreen")
-      child = Container();
+      child = ProfileScreen();
     else if (tabItem == "HistoryScreen")
       child = HistoryScreen();
     return Navigator(

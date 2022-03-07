@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
+import 'package:boilerplate/models/image/image_list.dart';
+import 'package:boilerplate/ui/photoview/photoView.dart';
 import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:boilerplate/stores/language/language_store.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
@@ -25,8 +27,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   //stores:---------------------------------------------------------------------
   late PostStore _postStore;
-  late ThemeStore _themeStore;
-  late LanguageStore _languageStore;
   late ImagePicker _picker;
   XFile? _image;
   String? selectedImage = "";
@@ -42,57 +42,50 @@ class _HomeScreenState extends State<HomeScreen> {
     super.didChangeDependencies();
 
     // initializing stores
-    _languageStore = Provider.of<LanguageStore>(context);
-    _themeStore = Provider.of<ThemeStore>(context);
     _postStore = Provider.of<PostStore>(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: buildAppBar("Aerial Image Detection"),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );
   }
 
   // app bar methods:-----------------------------------------------------------
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget buildAppBar(String text) {
     return AppBar(
       backgroundColor: Colors.amber,
       title: Center(
-          child: Text("Aerial Image Detection", textAlign: TextAlign.center)),
-    );
-  }
-
-  Widget _buildThemeButton() {
-    return Observer(
-      builder: (context) {
-        return IconButton(
-          onPressed: () {
-            _themeStore.changeBrightnessToDark(!_themeStore.darkMode);
-          },
-          icon: Icon(
-            _themeStore.darkMode ? Icons.brightness_5 : Icons.brightness_3,
-          ),
-        );
-      },
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 
   // body methods:--------------------------------------------------------------
   Widget _buildBody() {
-    return Stack(
-      children: <Widget>[_buildMainContent()],
-    );
+    return Stack(children: <Widget>[
+      _buildMainContent(),
+      Observer(
+        builder: (context) {
+          return _postStore.success
+              ? Container()
+              : _showErrorMessage(_postStore.errorStore.errorMessage);
+        },
+      ),
+    ]);
   }
 
   Widget _buildMainContent() {
     return Observer(
       builder: (context) {
-        return _postStore.uploading
-            ? CustomProgressIndicatorWidget()
-            : Material(child: _buildContent());
+        return Material(child: _buildContent());
       },
     );
   }
@@ -106,29 +99,50 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SingleChildScrollView(
               child: Column(children: [
                 SizedBox(height: 16),
-                _image != null
-                    ? Column(children: [
-                        Text("Input Image"),
-                        Container(
-                          child: Image.file(File(_image!.path),
-                              fit: BoxFit.contain),
-                        ),
-                      ])
-                    : SizedBox.shrink(),
-                SizedBox(height: 16),
                 Observer(builder: (context) {
-                  if (_postStore.output != null) {
-                    return Column(children: [
-                      Text("Output Image"),
-                      Image.memory(base64Decode(_postStore.output!)),
-                    ]);
+                  if (_postStore.uploading) {
+                    return CircularProgressIndicator(
+                        strokeWidth: 4.0, color: Colors.amber);
                   } else
                     return Container(width: 0, height: 0);
                 }),
-                  SizedBox(height: 8),
-                Text((selectedImage == ""
-                    ? "Please select or capture an image"
-                    : selectedImage!)),
+                //Output image
+                Observer(builder: (context) {
+                  if (_postStore.output != null &&
+                      _postStore.output!.image != null) {
+                    return Column(
+                      children: [
+                        Text(
+                            "Processing time: " +
+                                _postStore.processingTime! +
+                                "s",
+                            style: TextStyle(fontSize: 16)),
+                        _buildImage(
+                            "Output Image",
+                            Image.memory(
+                              base64Decode(_postStore.output!.image!),
+                              fit: BoxFit.contain,
+                            ),
+                            true),
+                      ],
+                    );
+                  } else
+                    return Container(width: 0, height: 0);
+                }),
+                SizedBox(height: 16),
+                //Input image
+                _image != null
+                    ? _buildImage(
+                        "Input Image",
+                        Image.file(File(_image!.path), fit: BoxFit.contain),
+                        false)
+                    : SizedBox.shrink(),
+                SizedBox(height: 8),
+                Text(
+                    (selectedImage == ""
+                        ? "Please select or capture an image"
+                        : ""),
+                    style: TextStyle(fontSize: 16)),
               ]),
             ),
           ),
@@ -140,6 +154,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildImage(String title, Widget img, bool isOutput) {
+    return Column(children: [
+      Text(title, style: TextStyle(fontSize: 16)),
+      GestureDetector(
+          onLongPress: () {
+            if (isOutput)
+              Navigator.push(
+                  Scaffold.of(context).context,
+                  CupertinoPageRoute(
+                      builder: (context) => PhotoViewScreen(
+                          imageList: new ImgList(images: [_postStore.output!]),
+                          index: 0)));
+          },
+          child: Container(
+              padding: EdgeInsets.symmetric(vertical: 4.0), child: img)),
+    ]);
+  }
+
   _buildButton() {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       TextButton.icon(
@@ -148,7 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icon(Icons.image_outlined, color: Colors.white),
         label: Text(
           "Upload",
-          style: TextStyle(fontSize: 18, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, color: Colors.white, fontWeight: FontWeight.w700),
         ),
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(Colors.amber),
@@ -160,14 +193,24 @@ class _HomeScreenState extends State<HomeScreen> {
       SizedBox(width: 36),
       TextButton.icon(
         onPressed: () {
-          if (_image != null)
-            _postStore.upload(_image!);
-          else
+          if (_image != null) {
+            _postStore.output = null;
+            try {
+              _postStore.upload(_image!);
+              _postStore.getHistory();
+
+            } catch (error) {
+              _showErrorMessage("Please try again!");
+            }
+          } else
             _showErrorMessage("Please select an aerial image");
         },
         icon: Icon(Icons.upload_file_outlined, color: Colors.white),
-        label:
-            Text("Submit", style: TextStyle(fontSize: 18, color: Colors.white)),
+        label: Text("Submit",
+            style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.w700)),
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(Colors.amber),
           shape: MaterialStateProperty.all(
@@ -194,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
           message: message,
           title: AppLocalizations.of(context).translate('home_tv_error'),
           duration: Duration(seconds: 3),
-        )..show(context);
+        )..show(Scaffold.of(context).context);
       }
     });
 

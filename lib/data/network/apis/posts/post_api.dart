@@ -29,7 +29,7 @@ class PostApi {
       final res = await _dioClient.post("http://192.168.20.166:5000/upload",
           options: Options(headers: {"Content-type": "multipart/form-data"}),
           data: data);
-      return res["image"];
+      return res;
     } catch (e) {
       print(e.toString());
       throw e;

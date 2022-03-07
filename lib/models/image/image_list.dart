@@ -1,11 +1,13 @@
 import 'package:boilerplate/models/image/image.dart';
 
 class ImgList {
-  final List<Img>? images;
+  List<Img>? images;
 
   ImgList({
     this.images,
-  });
+  }){
+    this.images = images;
+  }
 
   factory ImgList.fromJson(List<dynamic> json) {
     List<Img> posts = <Img>[];

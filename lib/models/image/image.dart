@@ -7,7 +7,11 @@ class Img {
     this.created,
     this.name,
     this.image,
-  });
+  }) {
+    this.created = created;
+    this.name = name;
+    this.image = image;
+  }
 
   factory Img.fromMap(Map<String, dynamic> json) => Img(
         created: json["created"],

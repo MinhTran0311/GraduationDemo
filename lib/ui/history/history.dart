@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
+import 'package:boilerplate/ui/photoview/photoView.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
 import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class HistoryScreen extends StatefulWidget {
   @override
@@ -17,10 +19,14 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   late PostStore _postStore;
+  late RefreshController _refreshController;
+  late bool isRefresh;
 
   @override
   void initState() {
     super.initState();
+    _refreshController = RefreshController(initialRefresh: false);
+    isRefresh = false;
   }
 
   @override
@@ -38,68 +44,115 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar("History"),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );
   }
 
   // app bar methods:-----------------------------------------------------------
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(String text) {
     return AppBar(
       backgroundColor: Colors.amber,
-      title: Center(child: Text("History", textAlign: TextAlign.center)),
+      title: Center(
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
+      ),
     );
   }
 
   // body methods:--------------------------------------------------------------
   Widget _buildBody() {
     return Stack(
-      children: <Widget>[_buildMainContent()],
+      children: <Widget>[
+        _buildMainContent(),
+        Observer(
+          builder: (context) {
+            return _postStore.success
+                ? Container()
+                : _showErrorMessage(_postStore.errorStore.errorMessage);
+          },
+        ),
+      ],
     );
   }
 
   Widget _buildMainContent() {
     return Observer(
       builder: (context) {
-        return _postStore.loading
+        return _postStore.loading && !isRefresh
             ? CustomProgressIndicatorWidget()
-            : Material(child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
-              child: _buildListView(),
-            ));
+            : Material(child: _buildListView());
       },
     );
   }
 
   Widget _buildListView() {
-    return _postStore.imgList != null
-        ? ListView.builder(
-            itemCount: _postStore.imgList!.images!.length,
-            itemBuilder: (BuildContext context, int index) {
-              return _buildCard(_postStore.imgList!.images![index]);
-            })
-        : Center(
-            child: Text("No images"),
-          );
+    return Padding(
+      padding: EdgeInsets.only(top: 12.0, bottom: 16.0, right: 8.0, left: 8.0),
+      child: SmartRefresher(
+        controller: _refreshController,
+        enablePullDown: true,
+        header: WaterDropHeader(
+            refresh: SizedBox(
+                width: 25.0,
+                height: 25.0,
+                child: Icon(Icons.flight_takeoff_outlined,
+                    color: Colors.amber, size: 20)),
+            waterDropColor: Colors.amber),
+        physics: BouncingScrollPhysics(),
+        onRefresh: () async {
+          isRefresh = true;
+          try {
+            _postStore.getHistory();
+          } catch (error) {
+            _showErrorMessage("Failed to load history");
+          }
+          await Future.delayed(Duration(milliseconds: 3000));
+          if (mounted) setState(() {});
+          _refreshController.refreshCompleted();
+        },
+        child: ((_postStore.imgList != null) &&
+                _postStore.imgList!.images != null)
+            ? ListView.builder(
+                itemCount: _postStore.imgList!.images!.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return _buildCard(_postStore.imgList!.images![index], index);
+                })
+            : Center(
+                child: Text("No images"),
+              ),
+      ),
+    );
   }
 
-  Widget _buildCard(Img img) {
-    return Container(
-      height: 120,
-      width: double.infinity,
-      margin: EdgeInsets.symmetric(vertical: 4.0),
-        // decoration: BoxDecoration(
-        //     border: Border.all(color: Colors.balck),
-        //     borderRadius: BorderRadius.all(Radius.circular(16.0))),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-        Container(
-            child:
-                Image.memory(base64Decode(img.image!), fit: BoxFit.fitHeight),
-            width: MediaQuery.of(context).size.width * 0.4),
-        SizedBox(width: 16),
-        Expanded(child: Text(img.created!.split('.').first))
-      ]),
+  Widget _buildCard(Img img, int index) {
+    return InkWell(
+      onTap: () => Navigator.push(
+          Scaffold.of(context).context,
+          CupertinoPageRoute(
+              builder: (context) => PhotoViewScreen(
+                  imageList: _postStore.imgList!, index: index))),
+      child: Container(
+        height: 120,
+        width: double.infinity,
+        margin: EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          Container(
+              child:
+                  Image.memory(base64Decode(img.image!), fit: BoxFit.fitHeight),
+              width: MediaQuery.of(context).size.width * 0.4),
+          SizedBox(width: 16),
+          Expanded(
+              child: Text(
+            img.created!.split('.').first,
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+          ))
+        ]),
+      ),
     );
   }
 
@@ -119,7 +172,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           message: message,
           title: AppLocalizations.of(context).translate('home_tv_error'),
           duration: Duration(seconds: 3),
-        )..show(context);
+        )..show(Scaffold.of(context).context);
       }
     });
 
