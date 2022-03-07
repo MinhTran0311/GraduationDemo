@@ -6,59 +6,153 @@ part of 'post_store.dart';
 // StoreGenerator
 // **************************************************************************
 
-// ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars
+// ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$PostStore on _PostStore, Store {
-  final _$postsListAtom = Atom(name: '_PostStore.postsList');
+  Computed<bool>? _$loadingComputed;
 
   @override
-  PostsList get postsList {
-    _$postsListAtom.reportObserved();
-    return super.postsList;
+  bool get loading => (_$loadingComputed ??=
+          Computed<bool>(() => super.loading, name: '_PostStore.loading'))
+      .value;
+  Computed<bool>? _$uploadingComputed;
+
+  @override
+  bool get uploading => (_$uploadingComputed ??=
+          Computed<bool>(() => super.uploading, name: '_PostStore.uploading'))
+      .value;
+
+  final _$fetchPostsFutureAtom = Atom(name: '_PostStore.fetchPostsFuture');
+
+  @override
+  ObservableFuture<ImgList?> get fetchPostsFuture {
+    _$fetchPostsFutureAtom.reportRead();
+    return super.fetchPostsFuture;
   }
 
   @override
-  set postsList(PostsList value) {
-    _$postsListAtom.context
-        .checkIfStateModificationsAreAllowed(_$postsListAtom);
-    super.postsList = value;
-    _$postsListAtom.reportChanged();
+  set fetchPostsFuture(ObservableFuture<ImgList?> value) {
+    _$fetchPostsFutureAtom.reportWrite(value, super.fetchPostsFuture, () {
+      super.fetchPostsFuture = value;
+    });
+  }
+
+  final _$fetchUploadFutureAtom = Atom(name: '_PostStore.fetchUploadFuture');
+
+  @override
+  ObservableFuture<dynamic> get fetchUploadFuture {
+    _$fetchUploadFutureAtom.reportRead();
+    return super.fetchUploadFuture;
+  }
+
+  @override
+  set fetchUploadFuture(ObservableFuture<dynamic> value) {
+    _$fetchUploadFutureAtom.reportWrite(value, super.fetchUploadFuture, () {
+      super.fetchUploadFuture = value;
+    });
+  }
+
+  final _$postListAtom = Atom(name: '_PostStore.postList');
+
+  @override
+  PostList? get postList {
+    _$postListAtom.reportRead();
+    return super.postList;
+  }
+
+  @override
+  set postList(PostList? value) {
+    _$postListAtom.reportWrite(value, super.postList, () {
+      super.postList = value;
+    });
   }
 
   final _$successAtom = Atom(name: '_PostStore.success');
 
   @override
   bool get success {
-    _$successAtom.reportObserved();
+    _$successAtom.reportRead();
     return super.success;
   }
 
   @override
   set success(bool value) {
-    _$successAtom.context.checkIfStateModificationsAreAllowed(_$successAtom);
-    super.success = value;
-    _$successAtom.reportChanged();
+    _$successAtom.reportWrite(value, super.success, () {
+      super.success = value;
+    });
   }
 
-  final _$loadingAtom = Atom(name: '_PostStore.loading');
+  final _$imgListAtom = Atom(name: '_PostStore.imgList');
 
   @override
-  bool get loading {
-    _$loadingAtom.reportObserved();
-    return super.loading;
+  ImgList? get imgList {
+    _$imgListAtom.reportRead();
+    return super.imgList;
   }
 
   @override
-  set loading(bool value) {
-    _$loadingAtom.context.checkIfStateModificationsAreAllowed(_$loadingAtom);
-    super.loading = value;
-    _$loadingAtom.reportChanged();
+  set imgList(ImgList? value) {
+    _$imgListAtom.reportWrite(value, super.imgList, () {
+      super.imgList = value;
+    });
   }
 
-  final _$getPostsAsyncAction = AsyncAction('getPosts');
+  final _$outputAtom = Atom(name: '_PostStore.output');
 
   @override
-  Future<dynamic> getPosts() {
-    return _$getPostsAsyncAction.run(() => super.getPosts());
+  Img? get output {
+    _$outputAtom.reportRead();
+    return super.output;
+  }
+
+  @override
+  set output(Img? value) {
+    _$outputAtom.reportWrite(value, super.output, () {
+      super.output = value;
+    });
+  }
+
+  final _$processingTimeAtom = Atom(name: '_PostStore.processingTime');
+
+  @override
+  String? get processingTime {
+    _$processingTimeAtom.reportRead();
+    return super.processingTime;
+  }
+
+  @override
+  set processingTime(String? value) {
+    _$processingTimeAtom.reportWrite(value, super.processingTime, () {
+      super.processingTime = value;
+    });
+  }
+
+  final _$getHistoryAsyncAction = AsyncAction('_PostStore.getHistory');
+
+  @override
+  Future<dynamic> getHistory() {
+    return _$getHistoryAsyncAction.run(() => super.getHistory());
+  }
+
+  final _$uploadAsyncAction = AsyncAction('_PostStore.upload');
+
+  @override
+  Future<dynamic> upload(XFile file) {
+    return _$uploadAsyncAction.run(() => super.upload(file));
+  }
+
+  @override
+  String toString() {
+    return '''
+fetchPostsFuture: ${fetchPostsFuture},
+fetchUploadFuture: ${fetchUploadFuture},
+postList: ${postList},
+success: ${success},
+imgList: ${imgList},
+output: ${output},
+processingTime: ${processingTime},
+loading: ${loading},
+uploading: ${uploading}
+    ''';
   }
 }
