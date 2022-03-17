@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar("Aerial Image Detection"),
+      appBar: buildAppBar("Caption OCR For Document Image"),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );
@@ -203,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _showErrorMessage("Please try again!");
             }
           } else
-            _showErrorMessage("Please select an aerial image");
+            _showErrorMessage("Please select or snap an image");
         },
         icon: Icon(Icons.upload_file_outlined, color: Colors.white),
         label: Text("Submit",

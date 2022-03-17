@@ -55,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildLogos() {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 64, vertical: 32),
+      margin: EdgeInsets.symmetric(horizontal: 32, vertical: 32),
       child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,8 +66,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     fit: BoxFit.fitHeight)),
             Container(
                 padding: EdgeInsets.only(bottom: 8),
-                width: MediaQuery.of(context).size.width * 0.12,
-                child: Image.asset("assets/images/Logo_SE.png",
+                width: MediaQuery.of(context).size.width * 0.4,
+                child: Image.asset("assets/images/Logo_ISE.jpg",
                     fit: BoxFit.fitHeight)),
             Container(
                 width: MediaQuery.of(context).size.width * 0.15,
@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text("Graduation Thesis",
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         SizedBox(height: 16),
-        Text("OBJECT DETECTION IN FOGGY AERIAL IMAGES \nVIA DEEP LEARNING",
+        Text("CAPTION OCR FOR DOCUMENT IMAGE",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         Divider(indent: 48, endIndent: 48, thickness: 1, color: Colors.black),
@@ -95,8 +95,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _buildAvatar(
             "PhD. Nguyễn Tấn Trần Minh Khang", "assets/images/GVHD.jpg", false),
         SizedBox(height: 16),
-        _buildAvatar("Trần Tuấn Minh", "assets/images/Student.jpg", true),
-        SizedBox(height: 16)
+        _buildAvatar("Nguyễn Trọng Thuận", "assets/images/NTT.jpg", true),
+        SizedBox(height: 16),
+        _buildAvatar("Nguyễn Quang Thuận", "assets/images/NQT.jpg", true),
       ]),
     );
   }
