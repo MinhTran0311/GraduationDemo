@@ -23,11 +23,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
 
     return Material(
-      child: Center(child: AppIconWidget(image: Assets.appLogo)),
+      child: Center(child: AppIconWidget(image: "assets/images/logo.png")),
     );
   }
 
   startTimer() {
+    print("12312321312");
     var _duration = Duration(milliseconds: 2000);
     return Timer(_duration, navigate);
   }
