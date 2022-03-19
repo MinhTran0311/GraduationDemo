@@ -2,13 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
+import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/models/image/image_list.dart';
+import 'package:boilerplate/models/object/object.dart';
 import 'package:boilerplate/ui/photoview/photoView.dart';
 import 'package:boilerplate/utils/routes/routes.dart';
 import 'package:boilerplate/stores/language/language_store.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
 import 'package:boilerplate/stores/theme/theme_store.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
+import 'package:boilerplate/widgets/object_bottom_sheet.dart';
 import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +102,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SingleChildScrollView(
               child: Column(children: [
                 SizedBox(height: 16),
+                //Input image
+                _image != null
+                    ? _buildImage(
+                        "Input Image",
+                        Image.file(File(_image!.path), fit: BoxFit.contain),
+                        false,
+                        null)
+                    : SizedBox.shrink(),
+                SizedBox(height: 16),
+
                 Observer(builder: (context) {
                   if (_postStore.uploading) {
                     return CircularProgressIndicator(
@@ -106,38 +119,49 @@ class _HomeScreenState extends State<HomeScreen> {
                   } else
                     return Container(width: 0, height: 0);
                 }),
+
                 //Output image
                 Observer(builder: (context) {
                   if (_postStore.output != null &&
                       _postStore.output!.image != null) {
-                    return Column(
-                      children: [
-                        Text(
-                            "Processing time: " +
-                                _postStore.processingTime! +
-                                "s",
-                            style: TextStyle(fontSize: 16)),
-                        _buildImage(
-                            "Output Image",
-                            Image.memory(
-                              base64Decode(_postStore.output!.image!),
-                              fit: BoxFit.contain,
-                            ),
-                            true),
-                      ],
-                    );
+                    return Column(children: [
+                      _buildImage(
+                          "Output Image",
+                          Image.memory(base64Decode(_postStore.output!.image!),
+                              fit: BoxFit.contain),
+                          true,
+                          [_postStore.output!]),
+                      Text(
+                          "Processing time: " +
+                              _postStore.processingTime! +
+                              "s",
+                          style: TextStyle(fontSize: 16)),
+                      TextButton.icon(
+                        onPressed: () {
+                          showInfoBottomSheet(_postStore.output!);
+                        },
+                        icon: Icon(Icons.info_outline_rounded,
+                            color: Colors.white),
+                        label: Text(
+                          "Show detail",
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700),
+                        ),
+                        style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.amber),
+                          shape: MaterialStateProperty.all(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                          ),
+                        ),
+                      ),
+                    ]);
                   } else
                     return Container(width: 0, height: 0);
                 }),
-                SizedBox(height: 16),
-                //Input image
-                _image != null
-                    ? _buildImage(
-                        "Input Image",
-                        Image.file(File(_image!.path), fit: BoxFit.contain),
-                        false)
-                    : SizedBox.shrink(),
-                SizedBox(height: 8),
                 Text(
                     (selectedImage == ""
                         ? "Please select or capture an image"
@@ -154,18 +178,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildImage(String title, Widget img, bool isOutput) {
+  Widget _buildImage(String title, Widget img, bool isOutput, List<Img>? list) {
     return Column(children: [
       Text(title, style: TextStyle(fontSize: 16)),
       GestureDetector(
           onLongPress: () {
-            if (isOutput)
+            if (isOutput) {
               Navigator.push(
                   Scaffold.of(context).context,
                   CupertinoPageRoute(
                       builder: (context) => PhotoViewScreen(
-                          imageList: new ImgList(images: [_postStore.output!]),
-                          index: 0)));
+                          imageList: new ImgList(images: list), index: 0)));
+            }
           },
           child: Container(
               padding: EdgeInsets.symmetric(vertical: 4.0), child: img)),
@@ -175,8 +199,9 @@ class _HomeScreenState extends State<HomeScreen> {
   _buildButton() {
     return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
       TextButton.icon(
-        onPressed: () =>
-            _showImageSourceActionSheet(Scaffold.of(context).context),
+        onPressed: () {
+          _showImageSourceActionSheet(Scaffold.of(context).context);
+        },
         icon: Icon(Icons.image_outlined, color: Colors.white),
         label: Text(
           "Upload",
@@ -198,7 +223,6 @@ class _HomeScreenState extends State<HomeScreen> {
             try {
               _postStore.upload(_image!);
               _postStore.getHistory();
-
             } catch (error) {
               _showErrorMessage("Please try again!");
             }
@@ -221,15 +245,6 @@ class _HomeScreenState extends State<HomeScreen> {
     ]);
   }
 
-  _showDialog<T>({required BuildContext context, required Widget child}) {
-    showDialog<T>(
-      context: context,
-      builder: (BuildContext context) => child,
-    ).then<void>((T? value) {
-      // The value passed to Navigator.pop() or null.
-    });
-  }
-
   _showErrorMessage(String message) {
     Future.delayed(Duration(milliseconds: 0), () {
       if (message.isNotEmpty) {
@@ -247,6 +262,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> selectImageSource(ImageSource imgSrc) async {
     _image = await _picker.pickImage(source: imgSrc);
     selectedImage = _image != null ? _image!.name : "";
+    _postStore.output = _image != null ? _postStore.output : null;
+
     setState(() {});
   }
 
@@ -295,5 +312,119 @@ class _HomeScreenState extends State<HomeScreen> {
         ]),
       );
     }
+  }
+
+  void showInfoBottomSheet(Img img) async {
+    await showModalBottomSheet(
+        context: Scaffold.of(context).context,
+        enableDrag: true,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        )),
+        builder: (BuildContext context) {
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Column(children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: Center(
+                  child: Text("Detail information",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700),
+                      textAlign: TextAlign.center),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(children: [
+                    _buildRowInfo("Name", img.name!.split("-").last),
+                    _buildRowInfo("Created at", img.created!.split('.').first),
+                    _buildRowInfo("Number of object",
+                        img.textLocation!.length.toString()),
+                    _buildTable(img.textLocation!)
+                  ]),
+                ),
+              )
+            ]),
+          );
+        });
+  }
+
+  Widget _buildRowInfo(String title, String info) {
+    TextStyle style = TextStyle(fontSize: 16, color: Colors.black);
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 16),
+      child: Row(children: [
+        Expanded(flex: 1, child: Text(title, style: style)),
+        SizedBox(width: 32),
+        Expanded(flex: 2, child: Text(info, style: style)),
+      ]),
+    );
+  }
+
+  Widget _buildTable(List<ImageObject> objects) {
+    TextStyle style =
+        TextStyle(color: Colors.black, fontWeight: FontWeight.w700);
+
+    List<TableRow> list = [];
+    list.add(TableRow(children: [
+      Text(
+        "Index",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Object",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Annotation",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Score",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+    ]));
+
+    for (int i = 0; i < objects.length; i++) {
+      list.add(TableRow(children: [
+        Text((i + 1).toString(), textAlign: TextAlign.center),
+        Text(objects[i].name!, textAlign: TextAlign.center),
+        Text(
+            "(" +
+                objects[i].x1.toString() +
+                ", " +
+                objects[i].y1.toString() +
+                ", " +
+                objects[i].x2.toString() +
+                ", " +
+                objects[i].y2.toString() +
+                ")",
+            textAlign: TextAlign.center),
+        Text(objects[i].score.toString(), textAlign: TextAlign.center)
+      ]));
+    }
+
+    return Table(
+      border: TableBorder.all(),
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      columnWidths: {
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(2),
+        2: FlexColumnWidth(5),
+        3: FlexColumnWidth(2),
+      },
+      children: list,
+    );
   }
 }

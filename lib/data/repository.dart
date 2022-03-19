@@ -35,7 +35,8 @@ class Repository {
   Future<ImgList?> getHistory() async {
     return await _postApi.getHistory().then((images) {
       return images;
-    }).catchError((error) => throw error);
+    });
+    //.catchError((error) => throw error);
   }
 
   Future<List<Post>> findPostById(int id) {

@@ -56,9 +56,10 @@ abstract class _PostStore with Store {
 
     future.then((imgs) {
       imgList = imgs;
-    }).catchError((error) {
-      errorStore.errorMessage = DioErrorUtil.handleError(error);
     });
+    // .catchError((error) {
+    //   errorStore.errorMessage = DioErrorUtil.handleError(error);
+    // });
   }
 
   @observable
@@ -77,12 +78,15 @@ abstract class _PostStore with Store {
 
     future.then((img) {
       processingTime = img["time"].toString();
-      output = new Img(
-          created: DateTime.now().toString(),
-          name: img["name"],
-          image: img["image"]);
+      output = Img.fromMap(img);
+
+      // new Img(
+      //     created: DateTime.now().toString(),
+      //     name: img["name"],
+      //     image: img["image"]);
     }).catchError((error) {
       errorStore.errorMessage = DioErrorUtil.handleError(error);
+      print(error);
     });
   }
 }

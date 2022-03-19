@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/models/image/image.dart';
+import 'package:boilerplate/models/object/object.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
 import 'package:boilerplate/ui/photoview/photoView.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
@@ -116,7 +117,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           _refreshController.refreshCompleted();
         },
         child: ((_postStore.imgList != null) &&
-                _postStore.imgList!.images != null)
+                _postStore.imgList!.images != null &&
+                _postStore.imgList!.images!.length > 0)
             ? ListView.builder(
                 itemCount: _postStore.imgList!.images!.length,
                 itemBuilder: (BuildContext context, int index) {
@@ -131,7 +133,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildCard(Img img, int index) {
     return InkWell(
-      onTap: () => Navigator.push(
+      onTap: () => showInfoBottomSheet(img),
+      onDoubleTap: () => Navigator.push(
           Scaffold.of(context).context,
           CupertinoPageRoute(
               builder: (context) => PhotoViewScreen(
@@ -177,5 +180,119 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
 
     return SizedBox.shrink();
+  }
+
+  void showInfoBottomSheet(Img img) async {
+    await showModalBottomSheet(
+        context: Scaffold.of(context).context,
+        enableDrag: true,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+        )),
+        builder: (BuildContext context) {
+          return Container(
+            margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: Column(children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: 8),
+                child: Center(
+                  child: Text("Detail information",
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w700),
+                      textAlign: TextAlign.center),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(children: [
+                    _buildRowInfo("Name", img.name!.split("-").last),
+                    _buildRowInfo("Created at", img.created!.split('.').first),
+                    _buildRowInfo("Number of object",
+                        img.textLocation!.length.toString()),
+                    _buildTable(img.textLocation!)
+                  ]),
+                ),
+              )
+            ]),
+          );
+        });
+  }
+
+  Widget _buildRowInfo(String title, String info) {
+    TextStyle style = TextStyle(fontSize: 16, color: Colors.black);
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 16),
+      child: Row(children: [
+        Expanded(flex: 1, child: Text(title, style: style)),
+        SizedBox(width: 32),
+        Expanded(flex: 2, child: Text(info, style: style)),
+      ]),
+    );
+  }
+
+  Widget _buildTable(List<ImageObject> objects) {
+    TextStyle style =
+        TextStyle(color: Colors.black, fontWeight: FontWeight.w700);
+
+    List<TableRow> list = [];
+    list.add(TableRow(children: [
+      Text(
+        "Index",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Object",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Annotation",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+      Text(
+        "Score",
+        textAlign: TextAlign.center,
+        style: style,
+      ),
+    ]));
+
+    for (int i = 0; i < objects.length; i++) {
+      list.add(TableRow(children: [
+        Text((i + 1).toString(), textAlign: TextAlign.center),
+        Text(objects[i].name!, textAlign: TextAlign.center),
+        Text(
+            "(" +
+                objects[i].x1.toString() +
+                ", " +
+                objects[i].y1.toString() +
+                ", " +
+                objects[i].x2.toString() +
+                ", " +
+                objects[i].y2.toString() +
+                ")",
+            textAlign: TextAlign.center),
+        Text(objects[i].score.toString(), textAlign: TextAlign.center)
+      ]));
+    }
+
+    return Table(
+      border: TableBorder.all(),
+      defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+      columnWidths: {
+        0: FlexColumnWidth(1),
+        1: FlexColumnWidth(2),
+        2: FlexColumnWidth(5),
+        3: FlexColumnWidth(2),
+      },
+      children: list,
+    );
   }
 }
