@@ -4,7 +4,6 @@ import 'package:boilerplate/data/network/constants/endpoints.dart';
 import 'package:boilerplate/data/network/dio_client.dart';
 import 'package:boilerplate/data/network/rest_client.dart';
 import 'package:boilerplate/models/image/image_list.dart';
-import 'package:boilerplate/models/post/post_list.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -26,24 +25,26 @@ class PostApi {
           filename: file.name,
         ),
       });
-      final res = await _dioClient.post("http://192.168.20.166:5000/upload",
+      final res = await _dioClient.post(Endpoints.upload,
           options: Options(headers: {"Content-type": "multipart/form-data"}),
           data: data);
       return res;
     } catch (e) {
-      print(e.toString());
       throw e;
     }
   }
 
   Future<ImgList> getHistory() async {
-    try {
-      final res = await _dioClient.get("http://192.168.20.166:5000/history",
-          options: Options(headers: {"Content-type": "multipart/form-data"}));
-      return ImgList.fromJson(res["images"]);
-    } catch (e) {
-      print(e.toString());
-      throw e;
-    }
+    final res = await _dioClient.get(Endpoints.getHistory,
+        options: Options(headers: {"Content-type": "multipart/form-data"}));
+    return ImgList.fromJson(res["images"]);
+    // try {
+    //   final res = await _dioClient.get(Endpoints.getHistory,
+    //       options: Options(headers: {"Content-type": "multipart/form-data"}));
+    //   return ImgList.fromJson(res["images"]);
+    // }
+    // catch (e) {
+    //   throw e;
+    // }
   }
 }
