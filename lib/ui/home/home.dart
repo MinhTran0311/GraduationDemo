@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar("Caption OCR For Document Image"),
+      appBar: buildAppBar("Parsing Vietnamese Publications"),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );
@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(children: [
       Text(title, style: TextStyle(fontSize: 16)),
       GestureDetector(
-          onLongPress: () {
+          onDoubleTap: () {
             if (isOutput) {
               Navigator.push(
                   Scaffold.of(context).context,
@@ -409,7 +409,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 objects[i].x2.toString() +
                 ", " +
                 objects[i].y2.toString() +
-                ")",
+                ")" +
+                (objects[i].text == null ? "" : "\n" + objects[i].text!),
             textAlign: TextAlign.center),
         Text(objects[i].score.toString(), textAlign: TextAlign.center)
       ]));

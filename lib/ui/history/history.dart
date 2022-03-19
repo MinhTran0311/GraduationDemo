@@ -211,7 +211,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(children: [
-                    _buildRowInfo("Name", img.name!.split("-").last),
+                    _buildRowInfo(
+                        "Name", img.name!.substring(img.name!.indexOf("-")+1)),
                     _buildRowInfo("Created at", img.created!.split('.').first),
                     _buildRowInfo("Number of object",
                         img.textLocation!.length.toString()),
@@ -277,7 +278,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 objects[i].x2.toString() +
                 ", " +
                 objects[i].y2.toString() +
-                ")",
+                ")" +
+                (objects[i].text == null ? "" : "\n" + objects[i].text!),
             textAlign: TextAlign.center),
         Text(objects[i].score.toString(), textAlign: TextAlign.center)
       ]));

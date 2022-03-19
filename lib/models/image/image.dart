@@ -26,6 +26,7 @@ class Img {
     objects = ((valueMap)[json["name"]] as List)
         .map((object) => ImageObject.fromMap(object))
         .toList();
+
     return Img(
       created: json["created"],
       name: json["name"],

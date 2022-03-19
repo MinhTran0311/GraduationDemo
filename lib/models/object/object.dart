@@ -5,6 +5,7 @@ class ImageObject {
   int? x2;
   int? y2;
   double? score;
+  String? text;
 
   ImageObject({
     this.name,
@@ -13,6 +14,7 @@ class ImageObject {
     this.x2,
     this.y2,
     this.score,
+    this.text,
   }) {
     this.name = name;
     this.x1 = x1;
@@ -20,6 +22,7 @@ class ImageObject {
     this.y1 = y1;
     this.y2 = y2;
     this.score = score;
+    this.text = text;
   }
 
   factory ImageObject.fromMap(List<dynamic> json) => ImageObject(
@@ -29,5 +32,6 @@ class ImageObject {
     x2: json[3],
     y2: json[4],
     score: json[5],
+    text: json.last is String ? json.last : null,
   );
 }

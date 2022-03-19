@@ -86,7 +86,7 @@ dev_dependencies:
   analyzer: ^1.4.0
 
 flutter_icons:
-  image_path: "assets/images/logo.png"
+  image_path: "assets/images/logo_Thuan.jpg"
   android: true
   ios: true
 
