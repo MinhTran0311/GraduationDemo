@@ -150,10 +150,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
               width: MediaQuery.of(context).size.width * 0.4),
           SizedBox(width: 16),
           Expanded(
-              child: Text(
-            img.created!.split('.').first,
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
-          ))
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                Text(img.name!.substring(img.name!.indexOf("-") + 1),
+                    style:
+                        TextStyle(fontWeight: FontWeight.w500, fontSize: 16)),
+                Text(
+                  img.created!.split('.').first,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                ),
+              ]))
         ]),
       ),
     );
@@ -211,8 +219,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(children: [
-                    _buildRowInfo(
-                        "Name", img.name!.substring(img.name!.indexOf("-")+1)),
+                    _buildRowInfo("Name",
+                        img.name!.substring(img.name!.indexOf("-") + 1)),
                     _buildRowInfo("Created at", img.created!.split('.').first),
                     _buildRowInfo("Number of object",
                         img.textLocation!.length.toString()),

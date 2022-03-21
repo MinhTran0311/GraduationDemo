@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:another_flushbar/flushbar_helper.dart';
 import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
 import 'package:boilerplate/models/image/image.dart';
@@ -16,8 +17,10 @@ import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:material_dialog/material_dialog.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
@@ -191,6 +194,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           imageList: new ImgList(images: list), index: 0)));
             }
           },
+          onLongPress: () async {
+            showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                  title: const Text('Save image'),
+                  content: const Text('Do you want to save this image?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await _createFileFromString(_postStore.output!.image!,
+                            _postStore.output!.name!);
+                        Navigator.pop(context, 'OK');
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ]),
+            );
+          },
           child: Container(
               padding: EdgeInsets.symmetric(vertical: 4.0), child: img)),
     ]);
@@ -217,11 +242,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       SizedBox(width: 36),
       TextButton.icon(
-        onPressed: () {
+        onPressed: () async {
           if (_image != null) {
             _postStore.output = null;
             try {
               _postStore.upload(_image!);
+
               _postStore.getHistory();
             } catch (error) {
               _showErrorMessage("Please try again!");
@@ -251,6 +277,20 @@ class _HomeScreenState extends State<HomeScreen> {
         FlushbarHelper.createError(
           message: message,
           title: AppLocalizations.of(context).translate('home_tv_error'),
+          duration: Duration(seconds: 3),
+        )..show(Scaffold.of(context).context);
+      }
+    });
+
+    return SizedBox.shrink();
+  }
+
+  _showSuccessMessage(String message) {
+    Future.delayed(Duration(milliseconds: 0), () {
+      if (message.isNotEmpty) {
+        FlushbarHelper.createSuccess(
+          message: message,
+          title: "Success",
           duration: Duration(seconds: 3),
         )..show(Scaffold.of(context).context);
       }
@@ -343,8 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(children: [
-                    _buildRowInfo(
-                        "Name", img.name!.substring(img.name!.indexOf("-")+1)),
+                    _buildRowInfo("Name",
+                        img.name!.substring(img.name!.indexOf("-") + 1)),
                     _buildRowInfo("Created at", img.created!.split('.').first),
                     _buildRowInfo("Number of object",
                         img.textLocation!.length.toString()),
@@ -428,5 +468,17 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       children: list,
     );
+  }
+
+  Future<String> _createFileFromString(String base64str, String imgName) async {
+    Uint8List bytes = base64.decode(base64str);
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    String fullPath = '$dir/$imgName';
+    File file = File(fullPath);
+    await file.writeAsBytes(bytes);
+
+    final result = await ImageGallerySaver.saveImage(bytes);
+    _showSuccessMessage("Saved image to phone.");
+    return file.path;
   }
 }
