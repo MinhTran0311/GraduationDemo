@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text("Graduation Thesis",
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         SizedBox(height: 16),
-        Text("CAPTION OCR FOR DOCUMENT IMAGE",
+        Text("PARSING VIETNAMESE PUBLICATIONS",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         Divider(indent: 48, endIndent: 48, thickness: 1, color: Colors.black),
