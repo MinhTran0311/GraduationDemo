@@ -53,11 +53,14 @@ class _HomePageScreenState extends State<HomePageScreen> {
         return isFirstRouteInCurrentTab;
       },
       child: Scaffold(
-        body: Stack(children: [
-          _buildOffstageNavigator("HistoryScreen"),
-          _buildOffstageNavigator("HomeScreen"),
-          _buildOffstageNavigator("InfoScreen"),
-        ]),
+        body: SafeArea(
+          top: false,
+          child: Stack(children: [
+            _buildOffstageNavigator("HistoryScreen"),
+            _buildOffstageNavigator("HomeScreen"),
+            _buildOffstageNavigator("InfoScreen"),
+          ]),
+        ),
         bottomNavigationBar: CurvedNavigationBar(
           height: 58,
           backgroundColor: Colors.white70,
