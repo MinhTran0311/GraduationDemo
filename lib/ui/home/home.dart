@@ -7,23 +7,18 @@ import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/models/image/image_list.dart';
 import 'package:boilerplate/models/object/object.dart';
 import 'package:boilerplate/ui/photoview/photoView.dart';
-import 'package:boilerplate/utils/routes/routes.dart';
-import 'package:boilerplate/stores/language/language_store.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
-import 'package:boilerplate/stores/theme/theme_store.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
-import 'package:boilerplate/widgets/object_bottom_sheet.dart';
-import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:material_dialog/material_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:image/image.dart' as img;
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -54,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: buildAppBar("Parsing Vietnamese Publications"),
+      appBar: buildAppBar("Aerial Object Detection"),
       backgroundColor: Colors.white70,
       body: SafeArea(child: _buildBody()),
     );

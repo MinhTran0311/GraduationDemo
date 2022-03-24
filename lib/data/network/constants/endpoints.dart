@@ -2,7 +2,7 @@ class Endpoints {
   Endpoints._();
 
   // base url
-  static const String baseUrl = "http://192.168.20.166:3000/thuan";
+  static const String baseUrl = "http://192.168.20.166:3000/minh";
 
   static const String upload = baseUrl + "/upload";
   static const String getHistory = baseUrl + "/history";

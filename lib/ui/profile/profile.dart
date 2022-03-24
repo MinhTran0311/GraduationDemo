@@ -67,7 +67,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
                 padding: EdgeInsets.only(bottom: 8),
                 width: MediaQuery.of(context).size.width * 0.4,
-                child: Image.asset("assets/images/Logo_ISE.jpg",
+                child: Image.asset("assets/images/Logo_SE.png",
                     fit: BoxFit.fitHeight)),
             Container(
                 width: MediaQuery.of(context).size.width * 0.15,
@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text("Graduation Thesis",
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
         SizedBox(height: 16),
-        Text("PARSING VIETNAMESE PUBLICATIONS",
+        Text("AERIAL OBJECT DETECTION",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         Divider(indent: 48, endIndent: 48, thickness: 1, color: Colors.black),
@@ -95,9 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _buildAvatar(
             "PhD. Nguyễn Tấn Trần Minh Khang", "assets/images/GVHD.jpg", false),
         SizedBox(height: 16),
-        _buildAvatar("Nguyễn Trọng Thuận", "assets/images/NTT.jpg", true),
-        SizedBox(height: 16),
-        _buildAvatar("Nguyễn Quang Thuận", "assets/images/NQT.jpg", true),
+        _buildAvatar("Trần Tuấn Minh", "assets/images/TTM.jpg", true),
       ]),
     );
   }
