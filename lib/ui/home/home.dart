@@ -24,6 +24,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import 'package:image/image.dart' as img;
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -301,10 +303,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> selectImageSource(ImageSource imgSrc) async {
     _image = await _picker.pickImage(source: imgSrc);
+    if (Platform.isIOS && imgSrc == ImageSource.camera && _image != null) {
+      File file = await fixExifRotation(_image!.path);
+      _image = new XFile(file.path);
+    }
     selectedImage = _image != null ? _image!.name : "";
     _postStore.output = _image != null ? _postStore.output : null;
 
     setState(() {});
+  }
+
+  Future<File> fixExifRotation(String imagePath) async {
+    final originalFile = File(imagePath);
+    List<int> imageBytes = await originalFile.readAsBytes();
+
+    final originalImage = img.decodeImage(imageBytes);
+
+    img.Image fixedImage;
+    fixedImage = img.copyRotate(originalImage!, 270);
+
+    final fixedFile =
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage));
+
+    return fixedFile;
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
