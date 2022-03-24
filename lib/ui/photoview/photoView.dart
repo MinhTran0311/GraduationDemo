@@ -26,32 +26,44 @@ class _PhotoViewScreenState extends State<PhotoViewScreen> {
   Widget build(BuildContext context) {
     int firstPage = widget.index;
     PageController _pageController = PageController(initialPage: firstPage);
-    return Container(
-        child: PhotoViewGallery.builder(
-      //scrollPhysics: const BouncingScrollPhysics(),
-      builder: (BuildContext context, int index) {
-        return PhotoViewGalleryPageOptions(
-          imageProvider:
-              MemoryImage(base64Decode(widget.imageList.images![index].image!)),
-          initialScale: PhotoViewComputedScale.contained * 0.9,
-          minScale: PhotoViewComputedScale.contained * 0.9,
-          maxScale: PhotoViewComputedScale.covered * 2.5,
-          heroAttributes: PhotoViewHeroAttributes(
-              tag: widget.imageList.images![index].created!),
-        );
-      },
-      itemCount: widget.imageList.images!.length,
-      loadingBuilder: (context, event) => Center(
-        child: Container(
-          width: 20.0,
-          height: 20.0,
-          child: CircularProgressIndicator(
-            value: event == null ? 0 : event.cumulativeBytesLoaded / 2,
+    return Material(
+      child: Stack(children: [
+        Container(
+            child: PhotoViewGallery.builder(
+              //scrollPhysics: const BouncingScrollPhysics(),
+              builder: (BuildContext context, int index) {
+                return PhotoViewGalleryPageOptions(
+                  imageProvider: MemoryImage(
+                      base64Decode(widget.imageList.images![index].image!)),
+                  initialScale: PhotoViewComputedScale.contained * 0.9,
+                  minScale: PhotoViewComputedScale.contained * 0.9,
+                  maxScale: PhotoViewComputedScale.covered * 2.5,
+                  heroAttributes: PhotoViewHeroAttributes(
+                      tag: widget.imageList.images![index].created!),
+                );
+              },
+              itemCount: widget.imageList.images!.length,
+              loadingBuilder: (context, event) => Center(
+                child: Container(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(
+                    value: event == null ? 0 : event.cumulativeBytesLoaded / 2,
+                  ),
+                ),
+              ),
+              backgroundDecoration: BoxDecoration(color: Colors.black),
+              pageController: _pageController,
+            )),
+        SafeArea(
+          child: Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+                icon: Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop()),
           ),
         ),
-      ),
-      backgroundDecoration: BoxDecoration(color: Colors.black),
-      pageController: _pageController,
-    ));
+      ]),
+    );
   }
 }
