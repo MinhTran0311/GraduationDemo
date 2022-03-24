@@ -26,7 +26,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:image/image.dart' as img;
 
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -38,11 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
   late ImagePicker _picker;
   XFile? _image;
   String? selectedImage = "";
+  late bool isCamera;
 
   @override
   void initState() {
     super.initState();
     _picker = new ImagePicker();
+    isCamera = false;
   }
 
   @override
@@ -248,6 +249,9 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_image != null) {
             _postStore.output = null;
             try {
+              if (Platform.isIOS && isCamera && _image != null) {
+                _image = await fixExifRotation(_image!.path);
+              }
               _postStore.upload(_image!);
 
               _postStore.getHistory();
@@ -303,17 +307,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> selectImageSource(ImageSource imgSrc) async {
     _image = await _picker.pickImage(source: imgSrc);
-    if (Platform.isIOS && imgSrc == ImageSource.camera && _image != null) {
-      File file = await fixExifRotation(_image!.path);
-      _image = new XFile(file.path);
-    }
     selectedImage = _image != null ? _image!.name : "";
     _postStore.output = _image != null ? _postStore.output : null;
+    if (imgSrc == ImageSource.camera && _image != null)
+      isCamera = true;
+    else
+      isCamera = false;
 
     setState(() {});
   }
 
-  Future<File> fixExifRotation(String imagePath) async {
+  Future<XFile> fixExifRotation(String imagePath) async {
     final originalFile = File(imagePath);
     List<int> imageBytes = await originalFile.readAsBytes();
 
@@ -325,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final fixedFile =
         await originalFile.writeAsBytes(img.encodeJpg(fixedImage));
 
-    return fixedFile;
+    return new XFile(fixedFile.path);
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
