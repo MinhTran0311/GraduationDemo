@@ -249,10 +249,10 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_image != null) {
             _postStore.output = null;
             try {
-              if (Platform.isIOS && isCamera && _image != null) {
-                _image = await fixExifRotation(_image!.path);
-              }
-              _postStore.upload(_image!);
+              if (Platform.isIOS && isCamera && _image != null)
+                _postStore.upload(await fixExifRotation(_image!.path));
+              else
+                _postStore.upload(_image!);
 
               _postStore.getHistory();
             } catch (error) {
