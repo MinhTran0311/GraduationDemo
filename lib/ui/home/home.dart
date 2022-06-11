@@ -298,26 +298,11 @@ class _HomeScreenState extends State<HomeScreen> {
       final img.Image? capturedImage = img.decodeImage(await File(_image!.path).readAsBytes());
       final img.Image orientedImage = img.bakeOrientation(capturedImage!);
       await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
-      selectedImage = null;
-      _postStore.output = _image != null ? _postStore.output : null;
+      selectedImage = _image != null ? _image!.path : null;
+      _postStore.output = _image != null ? null : _postStore.output;
     }
 
     setState(() {});
-  }
-
-  Future<XFile> fixExifRotation(String imagePath) async {
-    final originalFile = File(imagePath);
-    List<int> imageBytes = await originalFile.readAsBytes();
-
-    final originalImage = img.decodeImage(imageBytes);
-
-    img.Image fixedImage;
-    fixedImage = img.copyRotate(originalImage!, 270);
-
-    final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage));
-
-    return new XFile(fixedFile.path);
   }
 
   void _showImageSourceActionSheet(BuildContext context) {
@@ -423,6 +408,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildTable(List<ImageObject> objects) {
+    if (objects.length==0)
+      return SizedBox.shrink();
     TextStyle style =
         TextStyle(color: Colors.black, fontWeight: FontWeight.w700);
 
