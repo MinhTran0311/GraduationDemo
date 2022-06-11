@@ -2,27 +2,19 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:another_flushbar/flushbar_helper.dart';
-import 'package:boilerplate/data/sharedpref/constants/preferences.dart';
 import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/models/image/image_list.dart';
 import 'package:boilerplate/models/object/object.dart';
 import 'package:boilerplate/ui/photoview/photoView.dart';
-import 'package:boilerplate/utils/routes/routes.dart';
-import 'package:boilerplate/stores/language/language_store.dart';
 import 'package:boilerplate/stores/post/post_store.dart';
-import 'package:boilerplate/stores/theme/theme_store.dart';
 import 'package:boilerplate/utils/locale/app_localization.dart';
-import 'package:boilerplate/widgets/object_bottom_sheet.dart';
-import 'package:boilerplate/widgets/progress_indicator_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:material_dialog/material_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:image/image.dart' as img;
 
@@ -37,13 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
   late ImagePicker _picker;
   XFile? _image;
   String? selectedImage = "";
-  late bool isCamera;
 
   @override
   void initState() {
     super.initState();
     _picker = new ImagePicker();
-    isCamera = false;
   }
 
   @override
@@ -249,10 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_image != null) {
             _postStore.output = null;
             try {
-              if (Platform.isIOS && isCamera && _image != null)
-                _postStore.upload(await fixExifRotation(_image!.path));
-              else
-                _postStore.upload(_image!);
+              _postStore.upload(File(_image!.path));
 
               _postStore.getHistory();
             } catch (error) {
@@ -307,12 +294,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> selectImageSource(ImageSource imgSrc) async {
     _image = await _picker.pickImage(source: imgSrc);
-    selectedImage = _image != null ? _image!.name : "";
-    _postStore.output = _image != null ? _postStore.output : null;
-    if (imgSrc == ImageSource.camera && _image != null)
-      isCamera = true;
-    else
-      isCamera = false;
+    if (_image!=null){
+      final img.Image? capturedImage = img.decodeImage(await File(_image!.path).readAsBytes());
+      final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+      await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
+      selectedImage = null;
+      _postStore.output = _image != null ? _postStore.output : null;
+    }
 
     setState(() {});
   }

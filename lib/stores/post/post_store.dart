@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:boilerplate/data/repository.dart';
 import 'package:boilerplate/models/image/image.dart';
 import 'package:boilerplate/models/image/image_list.dart';
@@ -72,7 +74,7 @@ abstract class _PostStore with Store {
   String? processingTime;
 
   @action
-  Future upload(XFile file) async {
+  Future upload(File file) async {
     final future = _repository.upload(file);
     fetchUploadFuture = ObservableFuture(future);
 
