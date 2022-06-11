@@ -61,15 +61,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
+                height: 60,
                 width: MediaQuery.of(context).size.width * 0.15,
                 child: Image.asset("assets/images/Logo_UIT.jpg",
                     fit: BoxFit.fitHeight)),
             Container(
+                height: 60,
                 padding: EdgeInsets.only(bottom: 8),
                 width: MediaQuery.of(context).size.width * 0.4,
                 child: Image.asset("assets/images/Logo_ISE.jpg",
                     fit: BoxFit.fitHeight)),
             Container(
+                height: 60,
                 width: MediaQuery.of(context).size.width * 0.15,
                 child: Image.asset("assets/images/Logo_UIT_Together.png",
                     fit: BoxFit.fitHeight))
