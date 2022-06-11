@@ -16,6 +16,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'package:image/image.dart' as img;
 
 
 class HomeScreen extends StatefulWidget {
@@ -239,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (_image != null) {
             _postStore.output = null;
             try {
-              _postStore.upload(_image!);
+              _postStore.upload(File(_image!.path));
 
               _postStore.getHistory();
             } catch (error) {
@@ -294,9 +295,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> selectImageSource(ImageSource imgSrc) async {
     _image = await _picker.pickImage(source: imgSrc);
-    selectedImage = _image != null ? _image!.name : "";
-    _postStore.output = _image != null ? _postStore.output : null;
-
+    if (_image!=null){
+      final img.Image? capturedImage = img.decodeImage(await File(_image!.path).readAsBytes());
+      final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+      await File(_image!.path).writeAsBytes(img.encodeJpg(orientedImage));
+      selectedImage = null;
+      _postStore.output = _image != null ? _postStore.output : null;
+    }
     setState(() {});
   }
 
