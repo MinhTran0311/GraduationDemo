@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:boilerplate/data/local/datasources/post/post_datasource.dart';
 import 'package:boilerplate/data/sharedpref/shared_preference_helper.dart';
@@ -27,7 +26,7 @@ class Repository {
 
   // Post: ---------------------------------------------------------------------
 
-  Future<dynamic> upload(File file) async {
+  Future<dynamic> upload(XFile file) async {
     return await _postApi.upload(file).then((img) {
       return img;
     }).catchError((error) => throw error);

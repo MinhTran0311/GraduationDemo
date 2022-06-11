@@ -137,7 +137,7 @@ mixin _$PostStore on _PostStore, Store {
   final _$uploadAsyncAction = AsyncAction('_PostStore.upload');
 
   @override
-  Future<dynamic> upload(File file) {
+  Future<dynamic> upload(XFile file) {
     return _$uploadAsyncAction.run(() => super.upload(file));
   }
 

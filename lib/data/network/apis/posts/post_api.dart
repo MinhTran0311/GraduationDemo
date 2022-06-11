@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:boilerplate/data/network/constants/endpoints.dart';
 import 'package:boilerplate/data/network/dio_client.dart';
@@ -18,12 +17,12 @@ class PostApi {
   // injecting dio instance
   PostApi(this._dioClient, this._restClient);
 
-  Future<dynamic> upload(File file) async {
+  Future<dynamic> upload(XFile file) async {
     try {
       FormData data = FormData.fromMap({
         "file": await MultipartFile.fromFile(
           file.path,
-          filename: file.path.split('/').last,
+          filename: file.name,
         ),
       });
       final res = await _dioClient.post(Endpoints.upload,
