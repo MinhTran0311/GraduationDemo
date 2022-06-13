@@ -112,7 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           } catch (error) {
             _showErrorMessage("Failed to load history");
           }
-          await Future.delayed(Duration(milliseconds: 5000));
+          await Future.delayed(Duration(milliseconds: 7000));
           if (mounted) setState(() {});
           _refreshController.refreshCompleted();
         },
