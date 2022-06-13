@@ -8,7 +8,7 @@ class Endpoints {
   static const String getHistory = baseUrl + "/history";
 
   // receiveTimeout
-  static const int receiveTimeout = 30000;
+  static const int receiveTimeout = 50000;
 
   // connectTimeout
   static const int connectionTimeout = 60000;

@@ -240,8 +240,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _postStore.output = null;
             try {
               _postStore.upload(File(_image!.path));
-
-              _postStore.getHistory();
             } catch (error) {
               _showErrorMessage("Please try again!");
             }

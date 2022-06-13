@@ -23,10 +23,14 @@ class PostApi {
       FormData data = FormData.fromMap({
         "file": await MultipartFile.fromFile(
           file.path,
-          filename: file.path.split('/').last,        ),
+          filename: file.path.split('/').last,
+        ),
       });
       final res = await _dioClient.post(Endpoints.upload,
-          options: Options(headers: {"Content-type": "multipart/form-data"}),
+          options: Options(headers: {
+            "Content-type": "multipart/form-data",
+            "Connection": "Keep-Alive"
+          }),
           data: data);
       return res;
     } catch (e) {
@@ -36,7 +40,10 @@ class PostApi {
 
   Future<ImgList> getHistory() async {
     final res = await _dioClient.get(Endpoints.getHistory,
-        options: Options(headers: {"Content-type": "multipart/form-data"}));
+        options: Options(headers: {
+          "Content-type": "multipart/form-data",
+          "Connection": "Keep-Alive",
+        }));
     return ImgList.fromJson(res["images"]);
     // try {
     //   final res = await _dioClient.get(Endpoints.getHistory,
