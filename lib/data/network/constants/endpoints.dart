@@ -2,7 +2,7 @@ class Endpoints {
   Endpoints._();
 
   // base url
-  static const String baseUrl = "http://ec2-3-145-105-42.us-east-2.compute.amazonaws.com:3000/thuan";
+  static const String baseUrl = "http://ec2-3-134-101-6.us-east-2.compute.amazonaws.com:3000/thuan";
 
   static const String upload = baseUrl + "/upload";
   static const String getHistory = baseUrl + "/history";
